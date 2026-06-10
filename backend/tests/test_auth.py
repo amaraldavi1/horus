@@ -41,3 +41,19 @@ async def test_refresh_with_body_token(client, users):
 async def test_protected_endpoint_requires_token(client, users):
     resp = await client.get("/api/v1/auth/me")
     assert resp.status_code == 401
+
+async def test_login_accepts_reserved_domain_email(client, users):
+    """The seeded admin may use e.g. admin@horus.local, which EmailStr rejects;
+    login and the serialized user response must still work (regression)."""
+    from app.models import User, UserRole
+    from tests.conftest import SessionLocal, password_hash
+
+    async with SessionLocal() as session:
+        session.add(User(name="Local Admin", email="admin@horus.local",
+                         password_hash=password_hash(), role=UserRole.admin))
+        await session.commit()
+
+    resp = await client.post("/api/v1/auth/login",
+                             json={"email": "admin@horus.local", "password": PASSWORD})
+    assert resp.status_code == 200
+    assert resp.json()["user"]["email"] == "admin@horus.local"

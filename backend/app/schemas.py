@@ -30,7 +30,9 @@ class Page(BaseModel, Generic[T]):
 
 
 class LoginRequest(BaseModel):
-    email: EmailStr
+    # Plain str: login is a credential lookup, and the seeded admin may use a
+    # non-public domain (e.g. admin@horus.local) that EmailStr rejects.
+    email: str
     password: str
 
 
@@ -43,7 +45,8 @@ class UserOut(BaseModel):
 
     id: int
     name: str
-    email: EmailStr
+    # Plain str so serializing existing rows never fails on legacy addresses.
+    email: str
     role: UserRole
     is_active: bool
     created_at: datetime
