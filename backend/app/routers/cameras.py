@@ -46,13 +46,10 @@ _CREDENTIAL_FIELDS = {
 
 def camera_to_schema(camera: Camera) -> CameraOut:
     """Public shape: URLs masked, username/password never exposed."""
-    return CameraOut.model_validate(
-        camera,
-        update={
-            "main_url": mask_url(decrypt_secret(camera.main_url_encrypted)),
-            "sub_url": mask_url(decrypt_secret(camera.sub_url_encrypted)),
-        },
-    )
+    out = CameraOut.model_validate(camera)
+    out.main_url = mask_url(decrypt_secret(camera.main_url_encrypted))
+    out.sub_url = mask_url(decrypt_secret(camera.sub_url_encrypted))
+    return out
 
 
 @router.get("", response_model=Page[CameraOut])

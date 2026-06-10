@@ -30,7 +30,9 @@ REFRESH_COOKIE = "refresh_token"
 
 async def user_to_schema(user: User, db: AsyncSession) -> UserOut:
     rows = await db.execute(select(CameraPermission.camera_id).where(CameraPermission.user_id == user.id))
-    return UserOut.model_validate(user, update={"camera_ids": sorted(rows.scalars().all())})
+    out = UserOut.model_validate(user)
+    out.camera_ids = sorted(rows.scalars().all())
+    return out
 
 
 def _set_refresh_cookie(response: Response, token: str) -> None:
