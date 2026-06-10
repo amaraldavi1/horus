@@ -14,3 +14,5 @@ config/nginx/certs/
 media/
 *.db
 .DS_Store
+# go2rtc grava streams (com credenciais de câmeras) neste arquivo em runtime
+config/go2rtc/go2rtc.yaml

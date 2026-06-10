@@ -1,6 +1,8 @@
 # Streams são gerenciados dinamicamente pelo backend via API do go2rtc
 # (PUT /api/streams?name=cam{id}&src=rtsp://...). Este arquivo define apenas
-# a configuração base.
+# a configuração base. NÃO declare "streams:" aqui — o go2rtc reescreve este
+# arquivo ao registrar streams pela API e uma chave "streams: {}" quebra o
+# patch de YAML dele (erro 400 "did not find expected key").
 
 api:
   listen: ":1984"
@@ -15,5 +17,3 @@ webrtc:
 
 log:
   level: info
-
-streams: {}

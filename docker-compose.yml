@@ -68,7 +68,8 @@ services:
     image: alexxit/go2rtc:1.9.4
     restart: unless-stopped
     volumes:
-      - ./config/go2rtc/go2rtc.yaml:/config/go2rtc.yaml:ro
+      # Writable: go2rtc persists streams registered via API into this file.
+      - ./config/go2rtc/go2rtc.yaml:/config/go2rtc.yaml
     ports:
       - "8554:8554"   # RTSP relay (opcional, para consumo externo)
     # WebRTC precisa de UDP; em redes simples use network_mode: host.

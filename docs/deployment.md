@@ -11,12 +11,17 @@
 ```bash
 git clone <repo> horus && cd horus
 cp .env.example .env
+cp config/go2rtc/go2rtc.example.yaml config/go2rtc/go2rtc.yaml
 openssl rand -hex 32        # → SECRET_KEY
 openssl rand -hex 32        # → INTERNAL_API_TOKEN
 python3 -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"  # → CREDENTIALS_KEY
 # edite .env com os valores acima + POSTGRES_PASSWORD + ADMIN_PASSWORD
 docker compose up -d --build
 ```
+
+> O `go2rtc.yaml` é um arquivo de runtime: o go2rtc grava nele os streams
+> registrados pela API — incluindo URLs RTSP com credenciais — e por isso ele
+> fica fora do controle de versão (apenas o `.example` é versionado).
 
 UI: `http://localhost` · API/Swagger: `http://localhost/api/v1/docs`.
 

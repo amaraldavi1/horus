@@ -24,6 +24,7 @@ zonas e detecção de objetos por IA com fallback automático para CPU.
 cp .env.example .env
 # preencha SECRET_KEY, POSTGRES_PASSWORD, INTERNAL_API_TOKEN,
 # CREDENTIALS_KEY e ADMIN_PASSWORD (instruções no próprio arquivo)
+cp config/go2rtc/go2rtc.example.yaml config/go2rtc/go2rtc.yaml
 docker compose up -d --build
 ```
 
