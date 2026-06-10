@@ -7,7 +7,6 @@ Works with both postgresql+asyncpg and sqlite+aiosqlite URLs.
 from __future__ import annotations
 
 import asyncio
-import os
 from logging.config import fileConfig
 
 from alembic import context
@@ -26,9 +25,8 @@ target_metadata = Base.metadata
 
 
 def _database_url() -> str:
-    url = os.environ.get("DATABASE_URL")
-    if url:
-        return url
+    # Settings reads DATABASE_URL from the environment and otherwise assembles
+    # the URL from POSTGRES_* variables with the password percent-encoded.
     from app.config import get_settings
 
     return get_settings().database_url

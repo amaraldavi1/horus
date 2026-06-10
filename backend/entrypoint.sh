@@ -3,21 +3,22 @@
 set -e
 
 python - <<'EOF'
-import os
 import socket
 import sys
 import time
 
 from sqlalchemy.engine import make_url
 
-raw = os.environ.get("DATABASE_URL", "sqlite+aiosqlite:///./horus.db")
+from app.config import get_settings
+
+raw = get_settings().database_url
 try:
     url = make_url(raw)
 except Exception as exc:  # noqa: BLE001
     print(f"[entrypoint] FATAL: DATABASE_URL is not a valid SQLAlchemy URL: {exc}\n"
-          "[entrypoint] Check DATABASE_URL in your .env (special characters in the\n"
-          "[entrypoint] password must be percent-encoded), or unset it to use the\n"
-          "[entrypoint] bundled postgres service.", file=sys.stderr, flush=True)
+          "[entrypoint] Unset DATABASE_URL in your .env to use the bundled postgres\n"
+          "[entrypoint] service (the URL is then assembled safely from POSTGRES_*).",
+          file=sys.stderr, flush=True)
     sys.exit(1)
 
 if url.host:  # network database; sqlite URLs have no host and skip the wait
@@ -40,7 +41,8 @@ if url.host:  # network database; sqlite URLs have no host and skip the wait
                       f"[entrypoint] the compose default — unset it to use the bundled\n"
                       f"[entrypoint] postgres service.", file=sys.stderr, flush=True)
                 sys.exit(1)
-            print(f"[entrypoint] database not ready ({exc}); retrying in 2s", flush=True)
+            print(f"[entrypoint] database at {host}:{port} not ready ({exc}); "
+                  "retrying in 2s", flush=True)
             time.sleep(2)
 EOF
 

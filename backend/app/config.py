@@ -2,9 +2,10 @@
 from __future__ import annotations
 
 from functools import lru_cache
+from urllib.parse import quote
 
 from cryptography.fernet import Fernet
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -13,7 +14,30 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(env_file=".env", case_sensitive=False, extra="ignore")
 
-    database_url: str = "sqlite+aiosqlite:///./horus.db"
+    # When empty, assembled from the POSTGRES_* variables below (or a local
+    # SQLite file without them). Assembling it here — instead of string
+    # interpolation in docker-compose — keeps passwords with special
+    # characters (@ / # %) safe via percent-encoding.
+    database_url: str = ""
+
+    postgres_host: str = "postgres"
+    postgres_port: int = 5432
+    postgres_user: str = "horus"
+    postgres_db: str = "horus"
+    postgres_password: str | None = None
+
+    @model_validator(mode="after")
+    def _default_database_url(self) -> "Settings":
+        if not self.database_url:
+            if self.postgres_password:
+                self.database_url = (
+                    f"postgresql+asyncpg://{quote(self.postgres_user, safe='')}:"
+                    f"{quote(self.postgres_password, safe='')}"
+                    f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
+                )
+            else:
+                self.database_url = "sqlite+aiosqlite:///./horus.db"
+        return self
     redis_url: str = "redis://localhost:6379/0"
     mqtt_host: str = "localhost"
     mqtt_port: int = 1883
