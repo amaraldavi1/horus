@@ -14,13 +14,13 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app ./app
 COPY alembic ./alembic
-COPY alembic.ini .
+COPY alembic.ini entrypoint.sh ./
+RUN chmod +x entrypoint.sh
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 
 EXPOSE 8000
 
-# Apply migrations, then start the API. `exec` makes uvicorn PID 1 so it
-# receives SIGTERM for a clean shutdown.
-CMD ["sh", "-c", "alembic upgrade head && exec uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+# Waits for the database, applies migrations, then execs uvicorn.
+CMD ["./entrypoint.sh"]
