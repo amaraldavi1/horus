@@ -1,0 +1,23 @@
+# Horus video-engine — Python 3.11+
+opencv-python-headless>=4.9,<5
+numpy>=1.26,<3
+paho-mqtt>=2,<3
+httpx>=0.27,<1
+pillow>=10,<12
+pyyaml>=6,<7
+
+# --- Inference runtime -------------------------------------------------------
+# Default: CPU. Swap/add ONE of the variants below to use an accelerator
+# (the engine auto-selects execution providers from the hardware report):
+#
+#   NVIDIA GPU (CUDA / TensorRT EPs):
+#     onnxruntime-gpu>=1.17,<2        # replaces onnxruntime
+#     tensorrt                         # optional, enables TensorrtExecutionProvider
+#
+#   Intel CPU/iGPU (OpenVINO EP):
+#     onnxruntime-openvino>=1.17,<2   # replaces onnxruntime
+#     openvino>=2024.0                 # enables the OpenVINO probe/provider
+#
+#   Coral EdgeTPU (not an ONNX Runtime provider — needs a tflite model):
+#     pycoral / tflite-runtime         # detection is wired; backend plug-in TBD
+onnxruntime>=1.17,<2

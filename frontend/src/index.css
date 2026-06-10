@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply antialiased;
+  }
+  body {
+    @apply bg-slate-100 text-slate-900 dark:bg-surface-950 dark:text-slate-100;
+  }
+  /* range inputs */
+  input[type='range'] {
+    @apply h-1.5 w-full cursor-pointer appearance-none rounded-full bg-slate-300 accent-blue-600 dark:bg-surface-700;
+  }
+  input[type='date'],
+  input[type='time'] {
+    color-scheme: light;
+  }
+  .dark input[type='date'],
+  .dark input[type='time'] {
+    color-scheme: dark;
+  }
+}
