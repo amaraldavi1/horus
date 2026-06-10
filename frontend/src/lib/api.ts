@@ -20,7 +20,7 @@ export interface User {
   created_at?: string;
 }
 
-export type RecordingMode = 'continuous' | 'motion' | 'event' | 'off';
+export type RecordingMode = 'continuous' | 'scheduled' | 'motion' | 'object' | 'event' | 'off';
 
 export interface Camera {
   id: number;
@@ -175,6 +175,7 @@ export interface AuditEntry {
   action: string;
   target: string | null;
   details: string | null;
+  ip?: string | null;
   ts: string;
 }
 

@@ -47,7 +47,9 @@ export function labelPt(label: EventLabel, type: EventType): string {
 
 export const RECORDING_MODE_PT: Record<RecordingMode, string> = {
   continuous: 'Contínua',
+  scheduled: 'Agendada',
   motion: 'Por movimento',
+  object: 'Por objeto',
   event: 'Por evento',
   off: 'Desligada',
 };

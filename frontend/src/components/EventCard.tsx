@@ -1,4 +1,4 @@
-import { Car, Cat, PersonStanding, Waves } from 'lucide-react';
+import { Box, Car, Cat, PersonStanding, Waves } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { apiBlobUrl, type HorusEvent } from '@/lib/api';
 import { fmtDuration, fmtRelative, fmtTime, labelPt } from '@/lib/format';
@@ -15,6 +15,7 @@ export function EventIcon({
   if (label === 'person') return <PersonStanding className={className} aria-hidden />;
   if (label === 'car') return <Car className={className} aria-hidden />;
   if (label === 'animal') return <Cat className={className} aria-hidden />;
+  if (type === 'object') return <Box className={className} aria-hidden />;
   return <Waves className={className} aria-hidden />;
 }
 
