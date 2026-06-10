@@ -1,0 +1,130 @@
+name: horus
+
+services:
+  backend-api:
+    build: ./backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://horus:${POSTGRES_PASSWORD}@postgres:5432/horus}
+      REDIS_URL: redis://redis:6379/0
+      MQTT_HOST: mosquitto
+      MQTT_PORT: "1883"
+      SECRET_KEY: ${SECRET_KEY}
+      CREDENTIALS_KEY: ${CREDENTIALS_KEY}
+      INTERNAL_API_TOKEN: ${INTERNAL_API_TOKEN}
+      GO2RTC_URL: http://go2rtc:1984
+      MEDIA_ROOT: /media
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@horus.local}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+    volumes:
+      - media:/media
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mosquitto:
+        condition: service_started
+      redis:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8000/api/v1/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  video-engine:
+    build: ./video-engine
+    restart: unless-stopped
+    environment:
+      BACKEND_URL: http://backend-api:8000
+      INTERNAL_API_TOKEN: ${INTERNAL_API_TOKEN}
+      MQTT_HOST: mosquitto
+      MQTT_PORT: "1883"
+      GO2RTC_URL: http://go2rtc:1984
+      MEDIA_ROOT: /media
+      MAX_DISK_USAGE_PCT: ${MAX_DISK_USAGE_PCT:-90}
+    volumes:
+      - media:/media
+    depends_on:
+      backend-api:
+        condition: service_healthy
+    # --- Aceleração de hardware (descomente conforme o host) ---
+    # devices:
+    #   - /dev/dri:/dev/dri                    # VAAPI / QuickSync (Intel/AMD)
+    #   - /dev/apex_0:/dev/apex_0              # Coral TPU (PCIe)
+    #   - /dev/bus/usb:/dev/bus/usb            # Coral TPU (USB)
+    # deploy:                                   # GPU NVIDIA (requer nvidia-container-toolkit)
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+  go2rtc:
+    image: alexxit/go2rtc:1.9.4
+    restart: unless-stopped
+    volumes:
+      - ./config/go2rtc/go2rtc.yaml:/config/go2rtc.yaml:ro
+    ports:
+      - "8554:8554"   # RTSP relay (opcional, para consumo externo)
+    # WebRTC precisa de UDP; em redes simples use network_mode: host.
+    # Aqui mantemos bridge e o nginx faz proxy de /go2rtc/ -> 1984.
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+    volumes:
+      - ./config/nginx/certs:/etc/nginx/certs:ro
+    depends_on:
+      - backend-api
+      - go2rtc
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: horus
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: horus
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U horus"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  mosquitto:
+    image: eclipse-mosquitto:2
+    restart: unless-stopped
+    volumes:
+      - ./config/mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - mosquitto-data:/mosquitto/data
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru"]
+
+  # --- OPCIONAL: arquivamento S3-compatível ---
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    profiles: ["archive"]
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-horus}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      - minio-data:/data
+    ports:
+      - "9001:9001"
+
+volumes:
+  media:
+  pgdata:
+  mosquitto-data:
+  minio-data:

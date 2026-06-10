@@ -1,0 +1,19 @@
+# Streams são gerenciados dinamicamente pelo backend via API do go2rtc
+# (PUT /api/streams?name=cam{id}&src=rtsp://...). Este arquivo define apenas
+# a configuração base.
+
+api:
+  listen: ":1984"
+
+rtsp:
+  listen: ":8554"
+
+webrtc:
+  listen: ":8555/tcp"
+  candidates:
+    - stun:8555
+
+log:
+  level: info
+
+streams: {}
