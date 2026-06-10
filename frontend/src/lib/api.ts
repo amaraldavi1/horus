@@ -349,8 +349,9 @@ export const api = {
     apiFetch<LoginResponse>('/auth/login', { method: 'POST', body: { email, password } }),
   logout: () => apiFetch<void>('/auth/logout', { method: 'POST' }),
 
-  // cameras
-  listCameras: () => apiFetch<Camera[]>('/cameras'),
+  // cameras (the backend paginates; max page size covers any realistic setup)
+  listCameras: () =>
+    apiFetch<Paginated<Camera>>('/cameras', { query: { size: 200 } }).then((r) => r.items),
   getCamera: (id: number) => apiFetch<Camera>(`/cameras/${id}`),
   createCamera: (body: CameraCreate) => apiFetch<Camera>('/cameras', { method: 'POST', body }),
   updateCamera: (id: number, body: Partial<CameraCreate>) =>
@@ -377,9 +378,11 @@ export const api = {
   putSchedule: (cameraId: number, body: Schedule) =>
     apiFetch<Schedule>(`/cameras/${cameraId}/schedule`, { method: 'PUT', body }),
 
-  // recordings
+  // recordings (max page size so a full day of segments loads for the timeline)
   listRecordings: (params: { camera_id: number; from: string; to: string; kind?: string }) =>
-    apiFetch<Recording[]>('/recordings', { query: params }),
+    apiFetch<Paginated<Recording>>('/recordings', { query: { ...params, size: 2000 } }).then(
+      (r) => r.items,
+    ),
 
   // events
   listEvents: (params: {
@@ -402,8 +405,9 @@ export const api = {
     apiFetch<Notification>(`/notifications/${id}`, { method: 'PUT', body }),
   deleteNotification: (id: number) => apiFetch<void>(`/notifications/${id}`, { method: 'DELETE' }),
 
-  // users (admin)
-  listUsers: () => apiFetch<User[]>('/users'),
+  // users (admin; the backend paginates)
+  listUsers: () =>
+    apiFetch<Paginated<User>>('/users', { query: { size: 200 } }).then((r) => r.items),
   createUser: (body: Partial<User> & { password: string }) =>
     apiFetch<User>('/users', { method: 'POST', body }),
   updateUser: (id: number, body: Partial<User> & { password?: string }) =>
