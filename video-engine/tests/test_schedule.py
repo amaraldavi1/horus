@@ -37,8 +37,8 @@ class TestActiveMode:
             "timezone": "America/Sao_Paulo",  # UTC-3
             "rules": [{"days": [2], "start": "08:00", "end": "18:00", "mode": "motion"}],
         }
-        assert active_mode(schedule, utc("2026-06-10T10:00:00")) == "motion"  # 07:00 local? no: 10Z=07:00-3
         # 10:00 UTC == 07:00 local -> before start
+        assert active_mode(schedule, utc("2026-06-10T10:00:00")) == "off"
         assert active_mode(schedule, utc("2026-06-10T10:59:00")) == "off"
         assert active_mode(schedule, utc("2026-06-10T11:01:00")) == "motion"  # 08:01 local
 

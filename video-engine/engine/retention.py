@@ -92,12 +92,12 @@ def remove_empty_dirs(root: str) -> int:
     removed = 0
     if not os.path.isdir(root):
         return 0
-    for dirpath, dirnames, filenames in os.walk(root, topdown=False):
-        if dirpath == root or dirnames or filenames:
+    for dirpath, _dirnames, _filenames in os.walk(root, topdown=False):
+        if dirpath == root:
             continue
         try:
-            os.rmdir(dirpath)
-            removed += 1
+            os.rmdir(dirpath)  # only succeeds on empty dirs; parents emptied
+            removed += 1      # earlier in the bottom-up walk are caught too
         except OSError:
             pass
     return removed
