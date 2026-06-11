@@ -114,6 +114,22 @@ services:
     restart: unless-stopped
     command: ["redis-server", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru"]
 
+  # --- OPCIONAL: túnel SSH para câmeras em rede sem acesso direto ---
+  # Encaminha portas das câmeras através de um jump host (perfil "tunnel").
+  # Configure TUNNEL_SSH_* no .env e config/camera-proxy/tunnels.conf;
+  # as câmeras ficam acessíveis em camera-proxy:PORTA_LOCAL.
+  camera-proxy:
+    build: ./tools/camera-proxy
+    restart: unless-stopped
+    profiles: ["tunnel"]
+    environment:
+      SSH_HOST: ${TUNNEL_SSH_HOST:-}
+      SSH_USER: ${TUNNEL_SSH_USER:-}
+      SSH_PORT: ${TUNNEL_SSH_PORT:-22}
+    volumes:
+      - ./config/camera-proxy/tunnels.conf:/config/tunnels.conf:ro
+      - ./config/camera-proxy/ssh_key:/config/ssh_key:ro
+
   # --- OPCIONAL: arquivamento S3-compatível ---
   minio:
     image: minio/minio:latest

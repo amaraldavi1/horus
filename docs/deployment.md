@@ -95,6 +95,37 @@ Sem modelo presente, o sistema opera apenas com detecção de movimento.
 
 ---
 
+## Câmeras atrás de um jump host (túnel SSH, opcional)
+
+Quando o servidor Horus não tem acesso direto à rede das câmeras, mas existe
+um host nessa rede acessível por SSH, o serviço `camera-proxy` (perfil
+`tunnel`) mantém encaminhamentos de porta através dele. RTSP funciona
+normalmente porque todo o pipeline já força transporte TCP.
+
+```bash
+# 1. Chave SSH dedicada (sem passphrase) e instale a pública no jump host
+ssh-keygen -t ed25519 -N "" -f config/camera-proxy/ssh_key
+ssh-copy-id -i config/camera-proxy/ssh_key.pub usuario@jumphost
+
+# 2. Mapeie as câmeras
+cp config/camera-proxy/tunnels.example.conf config/camera-proxy/tunnels.conf
+# edite: PORTA_LOCAL  IP_DA_CAMERA  PORTA_REMOTA (uma linha por câmera)
+
+# 3. Configure o .env
+#   TUNNEL_SSH_HOST=jumphost   TUNNEL_SSH_USER=usuario   TUNNEL_SSH_PORT=22
+
+# 4. Suba com o perfil
+docker compose --profile tunnel up -d --build
+```
+
+No wizard de câmera, use `camera-proxy` como host e a porta local mapeada:
+`rtsp://usuario:senha@camera-proxy:10001/caminho`. O túnel reconecta sozinho
+(autossh + keepalives) se a conexão SSH cair.
+
+Limitações: a **descoberta ONVIF** (multicast) não atravessa o túnel — adicione
+as câmeras manualmente; para **PTZ/ONVIF**, encaminhe também a porta HTTP/ONVIF
+da câmera (80/8000) em outra porta local e use-a na configuração da câmera.
+
 ## MinIO (arquivamento opcional)
 
 ```bash

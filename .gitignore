@@ -16,3 +16,7 @@ media/
 .DS_Store
 # go2rtc grava streams (com credenciais de câmeras) neste arquivo em runtime
 config/go2rtc/go2rtc.yaml
+# túnel SSH: chave privada e mapeamentos (IPs internos) não são versionados
+config/camera-proxy/ssh_key
+config/camera-proxy/ssh_key.pub
+config/camera-proxy/tunnels.conf
